@@ -56,6 +56,28 @@ class SQLHelper {
     return db.query('items', orderBy: "id");
   }
 
+  //get all items/price of all items from current month
+  static Future<List<Map<String, dynamic>>> getPriceThisMonth() async {
+    final db = await SQLHelper.db();
+    print("called func getPriceThisMonth");
+    return db.query('items',
+        columns: ['price'],
+        where: "month = ?",
+        whereArgs: [DateTime.now().month],
+        orderBy: "date");
+  }
+
+  /// get all items/price from current day
+  static Future<List<Map<String, dynamic>>> getPriceToday() async {
+    final db = await SQLHelper.db();
+    print("called func getPriceToday");
+    return db.query('items',
+        columns: ['price'],
+        where: "date = ?",
+        whereArgs: [DateTime.now().day],
+        orderBy: "id");
+  }
+
   // Read a single item by id
   static Future<List<Map<String, dynamic>>> getItem(int id) async {
     final db = await SQLHelper.db();

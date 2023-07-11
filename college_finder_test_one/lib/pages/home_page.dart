@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:college_finder_test_one/pages/expense_card.dart';
 import 'package:college_finder_test_one/database/dataase_helper.dart';
+import 'package:date_format/date_format.dart';
+
 // ignore: must_be_immutable
 
 class HomePage extends StatefulWidget {
@@ -13,23 +15,74 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePagestate extends State<HomePage> {
-  var date = "21 July";
-  var totalSpent = "\$10000";
-  var todaySpent = "10000";
+  static int totalSpentInt = 0;
+  static int todaySpentInt = 0;
 
+  // late final dateFull = DateTime.now();
+  // late final date = "${dateFull.day} ${dateFull.day.toString()}";
+  late final date = formatDate(DateTime.now(), [d, ' ', M]);
   static List<Map<String, dynamic>> items = [];
-  bool isLoading = true;
+  static List<Map<String, dynamic>> totalSpentThisMonthList = [];
+  static List<Map<String, dynamic>> totalSpentTodayList = [];
+  static bool isLoading = true;
 
   void getAllItems() async {
     //gets all items and stores it in items
     final data = await SQLHelper.getItems();
+    final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
+    final totalSpentTodayData = await SQLHelper.getPriceToday();
     setState(() {
       items = data;
-
+      totalSpentThisMonthList = totalSpentThisMonthData;
+      totalSpentTodayList = totalSpentTodayData;
       isLoading = false;
+    });
+    totalSpentTodayList.forEach((element) {
+      var inString = element.values.toString();
+      inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+      todaySpentInt += int.parse(inString);
+
+      totalSpentThisMonthList.forEach((element) {
+        var inString = element.values.toString();
+        inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+        totalSpentInt += int.parse(inString);
+      });
     });
     print(items);
   }
+
+  // get total money spent this month
+  // Future<void> totalSpentThisMonthFunc() async {
+  //   final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
+  //   setState(() {
+  //     totalSpentThisMonthList = totalSpentThisMonthData;
+  //   });
+  //   //[{price: 200}, {price: 2000}, {price: 500}]
+  //   totalSpentThisMonthList.forEach((element) {
+  //     var inString = element.values.toString();
+  //     inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+  //     totalSpentInt += int.parse(inString);
+  //   });
+
+  //   print("Total spent this month ....${totalSpentThisMonthList}");
+  //   print(totalSpentInt);
+  // }
+
+  // Future<void> totalSpentTodayFunc() async {
+  //   final totalSpentTodayData = await SQLHelper.getPriceToday();
+  //   setState(() {
+  //     totalSpentTodayList = totalSpentTodayData;
+  //   });
+  //   //[{price: 200}, {price: 2000}, {price: 500}]
+  //   totalSpentTodayList.forEach((element) {
+  //     var inString = element.values.toString();
+  //     inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+  //     todaySpentInt += int.parse(inString);
+  //   });
+
+  //   print("Total spent this today ....${totalSpentTodayList}");
+  //   print(todaySpentInt);
+  // }
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -40,13 +93,19 @@ class HomePagestate extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    getAllItems(); // Loading the diary when the app starts
+    getAllItems();
+
+    // Loading the diary when the app starts
   }
+
+  // Delete an item
 
   Future<void> addItem() async {
     await SQLHelper.createItem(titleController.text, descriptionController.text,
         int.parse(priceController.text), typeController.text);
+
     getAllItems();
+
     print("get all items .. additem");
   }
 
@@ -105,7 +164,7 @@ class HomePagestate extends State<HomePage> {
                         padding: EdgeInsets.only(right: 150),
                         child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 7),
-                            child: Text(totalSpent,
+                            child: Text("\$${totalSpentInt}",
                                 overflow: TextOverflow.visible,
                                 softWrap: false,
                                 maxLines: 1,
@@ -128,7 +187,7 @@ class HomePagestate extends State<HomePage> {
                           padding: EdgeInsets.only(left: 170),
                           child: Padding(
                               padding: EdgeInsets.only(right: 0),
-                              child: Text("$todaySpent /-",
+                              child: Text("$todaySpentInt /-",
                                   style: GoogleFonts.lato(
                                       fontSize: 30, color: Color(0xffCEF2E1)))),
                         )

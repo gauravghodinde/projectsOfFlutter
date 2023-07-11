@@ -1,4 +1,4 @@
-name: auto_expense
+name: college_finder_test_one
 description: A new Flutter project.
 publish_to: 'none'
 version: 0.1.0
@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   google_fonts: ^5.1.0
   sqflite: ^2.2.8+4
+  date_format: ^2.0.7
 
 dev_dependencies:
   flutter_test:
