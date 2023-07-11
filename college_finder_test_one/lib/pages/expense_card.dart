@@ -14,40 +14,102 @@ class ExpenseCard extends StatefulWidget {
 }
 
 class ExpenseCardState extends State<ExpenseCard> {
-  void getAllItems() async {
+  var HomePagestateInstance = HomePagestate();
+  int todaySpentIntEx = 0;
+  int totalSpentIntEx = 0;
+  Future<void> getAllItems() async {
     //gets all items and stores it in items
     final data = await SQLHelper.getItems();
-    final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
-    final totalSpentTodayData = await SQLHelper.getPriceToday();
-    HomePagestate.totalSpentThisMonthList = totalSpentThisMonthData;
-    HomePagestate.totalSpentTodayList = totalSpentTodayData;
+    //final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
+    //final totalSpentTodayData = await SQLHelper.getPriceToday();
+    //HomePagestate.totalSpentThisMonthList = totalSpentThisMonthData;
+    //HomePagestate.totalSpentTodayList = totalSpentTodayData;
 
-    HomePagestate.totalSpentTodayList.forEach((element) {
-      var inString = element.values.toString();
-      inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
-      HomePagestate.todaySpentInt += int.parse(inString);
+    // HomePagestate.totalSpentTodayList.forEach((element) {
+    //  var inString = element.values.toString();
+    //  inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+    //  HomePagestate.todaySpentInt += int.parse(inString);
 
-      HomePagestate.totalSpentThisMonthList.forEach((element) {
-        var inString = element.values.toString();
-        inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
-        HomePagestate.totalSpentInt += int.parse(inString);
-        setState(() {
-          HomePagestate.items = data;
-          HomePagestate.todaySpentInt;
-          HomePagestate.isLoading = false;
-          HomePagestate.totalSpentInt;
-        });
-      });
+    //  HomePagestate.totalSpentThisMonthList.forEach((element) {
+    //    var inString = element.values.toString();
+    //     inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+    //    HomePagestate.totalSpentInt += int.parse(inString);
+    setState(() {
+      HomePagestate.items = data;
+      // HomePagestate.todaySpentInt;
+      // HomePagestate.isLoading = false;
+      // HomePagestate.totalSpentInt;
     });
+    // });
+    // });
     print(HomePagestate.items);
+  }
+
+  Future<void> totalSpentThisMonthFunc() async {
+    final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
+    // setState(() {
+    HomePagestate.totalSpentThisMonthList = totalSpentThisMonthData;
+    // });
+    HomePagestateInstance.totalSpentInt = 0;
+    //[{price: 200}, {price: 2000}, {price: 500}]
+    for (var element in HomePagestate.totalSpentThisMonthList) {
+      var inString = element.values.toString();
+      inString = inString.replaceAll(RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+      totalSpentIntEx += int.parse(inString);
+    }
+    setState(() {
+      HomePagestateInstance.totalSpentInt = totalSpentIntEx;
+    });
+
+    print(
+        "Total spent this month exstate ....${HomePagestate.totalSpentThisMonthList}");
+    print(HomePagestateInstance.totalSpentInt);
+  }
+
+  Future<void> totalSpentTodayFunc() async {
+    final totalSpentTodayData = await SQLHelper.getPriceToday();
+    //setState(() {
+    HomePagestate.totalSpentTodayList = totalSpentTodayData;
+    // });
+    //[{price: 200}, {price: 2000}, {price: 500}]
+    HomePagestateInstance.todaySpentInt = 0;
+    for (var element in HomePagestate.totalSpentTodayList) {
+      var inString = element.values.toString();
+      inString = inString.replaceAll(RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+      todaySpentIntEx += int.parse(inString);
+    }
+    setState(() {
+      HomePagestateInstance.todaySpentInt = todaySpentIntEx;
+    });
+    print(
+        "Total spent this today exstate ....${HomePagestate.totalSpentTodayList}");
+    print(HomePagestateInstance.todaySpentInt);
   }
 
   void deleteItem(int id) async {
     await SQLHelper.deleteItem(id);
+    await getAllItems();
+    await totalSpentThisMonthFunc();
+    await totalSpentTodayFunc();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Successfully deleted a journal!'),
     ));
+
+    // getAllItems();
+    // totalSpentThisMonthFunc();
+    // totalSpentTodayFunc();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
     getAllItems();
+
+    totalSpentThisMonthFunc();
+    totalSpentTodayFunc();
+
+    // Loading the diary when the app starts
   }
 
   @override

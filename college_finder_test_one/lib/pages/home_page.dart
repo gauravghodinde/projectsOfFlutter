@@ -6,17 +6,19 @@ import 'package:college_finder_test_one/database/dataase_helper.dart';
 import 'package:date_format/date_format.dart';
 
 // ignore: must_be_immutable
+// int totalSpentInt = 0;
+// int todaySpentInt = 0;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => HomePagestate();
 }
 
 class HomePagestate extends State<HomePage> {
-  static int totalSpentInt = 0;
-  static int todaySpentInt = 0;
+  int totalSpentInt = 0;
+  int todaySpentInt = 0;
 
   // late final dateFull = DateTime.now();
   // late final date = "${dateFull.day} ${dateFull.day.toString()}";
@@ -29,60 +31,62 @@ class HomePagestate extends State<HomePage> {
   void getAllItems() async {
     //gets all items and stores it in items
     final data = await SQLHelper.getItems();
-    final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
-    final totalSpentTodayData = await SQLHelper.getPriceToday();
+    //final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
+    //final totalSpentTodayData = await SQLHelper.getPriceToday();
     setState(() {
       items = data;
-      totalSpentThisMonthList = totalSpentThisMonthData;
-      totalSpentTodayList = totalSpentTodayData;
+      //totalSpentThisMonthList = totalSpentThisMonthData;
+      //totalSpentTodayList = totalSpentTodayData;
       isLoading = false;
     });
-    totalSpentTodayList.forEach((element) {
-      var inString = element.values.toString();
-      inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
-      todaySpentInt += int.parse(inString);
+    //totalSpentTodayList.forEach((element) {
+    //var inString = element.values.toString();
+    //inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+    //todaySpentInt += int.parse(inString);
 
-      totalSpentThisMonthList.forEach((element) {
-        var inString = element.values.toString();
-        inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
-        totalSpentInt += int.parse(inString);
-      });
-    });
+    //totalSpentThisMonthList.forEach((element) {
+    //  var inString = element.values.toString();
+    //  inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+    //totalSpentInt += int.parse(inString);
+    //   });
+    //});
     print(items);
   }
 
-  // get total money spent this month
-  // Future<void> totalSpentThisMonthFunc() async {
-  //   final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
-  //   setState(() {
-  //     totalSpentThisMonthList = totalSpentThisMonthData;
-  //   });
-  //   //[{price: 200}, {price: 2000}, {price: 500}]
-  //   totalSpentThisMonthList.forEach((element) {
-  //     var inString = element.values.toString();
-  //     inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
-  //     totalSpentInt += int.parse(inString);
-  //   });
+  //get total money spent this month
+  Future<void> totalSpentThisMonthFunc() async {
+    final totalSpentThisMonthData = await SQLHelper.getPriceThisMonth();
+    // setState(() {
+    totalSpentThisMonthList = totalSpentThisMonthData;
+    // });
+    //[{price: 200}, {price: 2000}, {price: 500}]
+    totalSpentInt = 0;
+    for (var element in totalSpentThisMonthList) {
+      var inString = element.values.toString();
+      inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+      totalSpentInt += int.parse(inString);
+    }
 
-  //   print("Total spent this month ....${totalSpentThisMonthList}");
-  //   print(totalSpentInt);
-  // }
+    print("Total spent this month ....${totalSpentThisMonthList}");
+    print(totalSpentInt);
+  }
 
-  // Future<void> totalSpentTodayFunc() async {
-  //   final totalSpentTodayData = await SQLHelper.getPriceToday();
-  //   setState(() {
-  //     totalSpentTodayList = totalSpentTodayData;
-  //   });
-  //   //[{price: 200}, {price: 2000}, {price: 500}]
-  //   totalSpentTodayList.forEach((element) {
-  //     var inString = element.values.toString();
-  //     inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
-  //     todaySpentInt += int.parse(inString);
-  //   });
+  Future<void> totalSpentTodayFunc() async {
+    final totalSpentTodayData = await SQLHelper.getPriceToday();
+    setState(() {
+      totalSpentTodayList = totalSpentTodayData;
+    });
+    //[{price: 200}, {price: 2000}, {price: 500}]
+    todaySpentInt = 0;
+    for (var element in totalSpentTodayList) {
+      var inString = element.values.toString();
+      inString = inString.replaceAll(new RegExp(r'[#*)(@!,^&%.$\s]+'), "");
+      todaySpentInt += int.parse(inString);
+    }
 
-  //   print("Total spent this today ....${totalSpentTodayList}");
-  //   print(todaySpentInt);
-  // }
+    print("Total spent this today ....${totalSpentTodayList}");
+    print(todaySpentInt);
+  }
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -93,8 +97,13 @@ class HomePagestate extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
     getAllItems();
 
+    totalSpentThisMonthFunc();
+    totalSpentTodayFunc();
+
+    super.initState();
     // Loading the diary when the app starts
   }
 
@@ -105,6 +114,9 @@ class HomePagestate extends State<HomePage> {
         int.parse(priceController.text), typeController.text);
 
     getAllItems();
+
+    totalSpentThisMonthFunc();
+    totalSpentTodayFunc();
 
     print("get all items .. additem");
   }
@@ -187,7 +199,7 @@ class HomePagestate extends State<HomePage> {
                           padding: EdgeInsets.only(left: 170),
                           child: Padding(
                               padding: EdgeInsets.only(right: 0),
-                              child: Text("$todaySpentInt /-",
+                              child: Text("${todaySpentInt} /-",
                                   style: GoogleFonts.lato(
                                       fontSize: 30, color: Color(0xffCEF2E1)))),
                         )
